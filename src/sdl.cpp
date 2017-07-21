@@ -1,75 +1,65 @@
 #include <sdl_wrapper/sdl.hpp>
-#include <sdl_wrapper/sdl/video.hpp>
 
 #include "errors.hpp"
 
 #include <SDL.h>
 
-#include <stdexcept>
-#include <sstream>
+#include <cassert>
 
 namespace sdl {
+
+namespace {
+
+extern const InitFlags InitTimer = SDL_INIT_TIMER;
+extern const InitFlags InitAudio = SDL_INIT_AUDIO;
+extern const InitFlags InitVideo = SDL_INIT_VIDEO;
+extern const InitFlags InitJoystick = SDL_INIT_JOYSTICK;
+extern const InitFlags InitHaptic = SDL_INIT_HAPTIC;
+extern const InitFlags InitGamecontroller = SDL_INIT_GAMECONTROLLER;
+extern const InitFlags InitEvents = SDL_INIT_EVENTS;
+extern const InitFlags InitEverything = SDL_INIT_EVERYTHING;
+extern const InitFlags InitNoparachute = SDL_INIT_NOPARACHUTE;
+
+} // namespace
 
 //
 // Initialization and shutdown
 //
 
-void init(
-    uint32_t sdlFlags = SDL_INIT_VIDEO | SDL_INIT_AUDIO,
-    uint32_t imgFlags = IMG_INIT_PNG | IMG_INIT_JPG)
+void init(InitFlags flags)
 {
-    if (SDL_Init(sdlFlags) != 0) {
-        throw SdlError("SDL_Init");
-    }
-    if (IMG_Init(imgFlags) != imgFlags) {
-        throw SdlImageError("IMG_Init");
-    }
-    if (TTF_Init() != 0) {
-        throw SdlTtfError("TTF_Init");
+    if (SDL_Init(flags) != 0) {
+        throwSdl();
     }
 }
 
-void initSubSystem(Uint32 flags)
+void initSubSystem(InitFlags flags)
 {
     if (SDL_InitSubSystem(flags) != 0) {
-        throw SdlError("SDL_InitSubSystem");
+        throwSdl();
     }
 }
 
 void quit()
 {
-    TTF_Quit();
-    IMG_Quit();
     SDL_Quit();
 }
 
-void quitSubSystem(uint32_t flags)
+void quitSubSystem(InitFlags flags)
 {
     SDL_QuitSubSystem(flags);
 }
 
-Uint32 wasInit(uint32_t flags)
+void setMainReady()
+{
+    SDL_SetMainReady();
+}
+
+InitFlags wasInit(InitFlags flags)
 {
     return SDL_WasInit(flags);
 }
 
-//
-// video
-//
-
-std::shared_ptr<Window> createWindow(
-    const std::string& title, int x, int y, int w, int h, uint32_t flags)
-{
-    return std::make_shared<Window>(title, x, y, w, h, flags);
-}
-
-//
-// timer
-//
-
-uint32_t getTicks()
-{
-    return SDL_GetTicks();
-}
+// NOT IMPLEMENTED: SDL_WinRTRunApp
 
 } // namespace sdl
